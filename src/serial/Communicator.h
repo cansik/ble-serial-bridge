@@ -7,21 +7,27 @@
 
 #include <Stream.h>
 #include <SimpleMap.h>
+#include <HardwareSerial.h>
+#include <cstdio>
 
 class Communicator {
     static const char TOKEN_DELIMITER = ' ';
     static const char LINE_DELIMITER = '\n';
 
 private:
-    Stream &serial;
+    HardwareSerial &serial;
     SimpleMap<String, std::function<int(String)>>* commands;
 
     void setupCommands();
 
 public:
-    explicit Communicator(Stream &serial);
+    explicit Communicator(HardwareSerial &serial);
 
     void update();
+
+    void registerCommand(const String& command, const std::function<int(String)>& block);
+
+    Stream &getSerial() const;
 };
 
 
