@@ -1,10 +1,12 @@
+#include <serial/Communicator.h>
 #include "Arduino.h"
+
+Communicator communicator(Serial);
 
 void setup() {
     Serial.begin(115200);
 }
 
 void loop() {
-    Serial.println("hello world");
-    delay(1000);
+    communicator.update();
 }
