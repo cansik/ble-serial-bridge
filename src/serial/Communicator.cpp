@@ -11,8 +11,6 @@ Communicator::Communicator(HardwareSerial &serial) : serial(serial) {
         if (a > b) return 1;
         /*if (a < b) */ return -1;
     });
-
-    setupCommands();
 }
 
 void Communicator::update() {
@@ -28,45 +26,21 @@ void Communicator::update() {
     auto command = line.substring(0, line.indexOf(TOKEN_DELIMITER));
     auto params = line.substring(line.indexOf(TOKEN_DELIMITER) + 1);
 
-    serial.print("command: ");
-    serial.println(command);
-
-    serial.print("params: ");
-    serial.println(params);
-
     auto block = commands->get(command);
 
 
     if(block == nullptr) {
-        serial.println("Command is not registered!");
+        serial.println("error Command is not registered!");
         return;
     }
 
     // run command
     auto output = block(params);
 
-    serial.print("Output: ");
-    serial.println(output);
-
     // check output
     if(output == -1) {
-        serial.println("Error in parsing parameters!");
+        serial.println("error Parameters could not be parsed!");
     }
-}
-
-void Communicator::setupCommands() {
-    // add commands
-    commands->put("test", [&] (const String& params) {
-        char message[20];
-
-        if(sscanf(params.c_str(), "%s", message) < 0)
-            return -1;
-
-        serial.print("Test MSG: ");
-        serial.println(message);
-
-        return 0;
-    });
 }
 
 void Communicator::registerCommand(const String& command, const std::function<int(String)>& block) {
