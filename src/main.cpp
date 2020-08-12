@@ -56,15 +56,23 @@ void setupCommands() {
         scan->setActiveScan(true);
         auto foundDevices = scan->start(time, false);
 
+        auto isFirstDevice = true;
+
         for (int i = 0; i < foundDevices.getCount(); i++) {
             auto device = foundDevices.getDevice(i);
 
             if (!device.isAdvertisingService(bleServiceAddress))
                 continue;
 
+            if(!isFirstDevice) {
+                communicator.getSerial().println();
+            }
+
             communicator.getSerial().print(device.getAddress().toString().c_str());
             communicator.getSerial().print(" ");
-            communicator.getSerial().println(device.getName().c_str());
+            communicator.getSerial().print(device.getName().c_str());
+
+            isFirstDevice = false;
         }
 
         return 1;
@@ -117,7 +125,11 @@ void setupCommands() {
                 continue;
             }
 
-            communicator.getSerial().println(devices->getKey(i));
+            communicator.getSerial().print(devices->getKey(i));
+
+            if(i < devices->size() - 1) {
+                communicator.getSerial().println();
+            }
         }
         return 1;
     });
