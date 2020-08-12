@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-public class BLETests {
+public class BLEDriverTests {
 
     @Test
     public void scanTest() {
@@ -21,7 +21,7 @@ public class BLETests {
     }
 
     @Test
-    public void connectAndDisconnect() {
+    public void connectAndDisconnectTest() {
         try (BLEDriver driver = new BLEDriver()) {
             driver.open(TestUtils.ADDRESS, TestUtils.BAUD_RATE);
 
@@ -32,7 +32,25 @@ public class BLETests {
     }
 
     @Test
-    public void readCharacteristics() {
+    public void listTest() {
+        try (BLEDriver driver = new BLEDriver()) {
+            driver.open(TestUtils.ADDRESS, TestUtils.BAUD_RATE);
+
+            driver.connect(TestUtils.DEVICE_ID);
+            TestUtils.sleep(2000);
+
+            List<BLEDevice> devices = driver.list();
+            for(BLEDevice device : devices) {
+                System.out.println(device.getId());
+            }
+
+            TestUtils.sleep(2000);
+            driver.disconnect(TestUtils.DEVICE_ID);
+        }
+    }
+
+    @Test
+    public void readCharacteristicsTest() {
         try (BLEDriver driver = new BLEDriver()) {
             driver.open(TestUtils.ADDRESS, TestUtils.BAUD_RATE);
 
@@ -44,12 +62,13 @@ public class BLETests {
     }
 
     @Test
-    public void writeCharacteristics() {
+    public void writeCharacteristicsTest() {
         try (BLEDriver driver = new BLEDriver()) {
             driver.open(TestUtils.ADDRESS, TestUtils.BAUD_RATE);
 
             driver.connect(TestUtils.DEVICE_ID);
             driver.write(TestUtils.DEVICE_ID, TestUtils.SERVICE_ID, TestUtils.NEOPIXEL_COLOR_ID, "i32", 0x0000FF);
+            TestUtils.sleep(2000);
             driver.disconnect(TestUtils.DEVICE_ID);
         }
     }
