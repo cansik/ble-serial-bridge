@@ -1,4 +1,4 @@
-# BLE Serial Bridge
+# BLE Serial Bridge [![](https://jitpack.io/v/cansik/ble-serial-bridge.svg)](https://jitpack.io/#cansik/ble-serial-bridge)
 A firmware to use an ESP32 as a BLE device controlled over serial commands.
 
 
