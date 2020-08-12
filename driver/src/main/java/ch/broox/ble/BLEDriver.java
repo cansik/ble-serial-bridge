@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 public class BLEDriver implements AutoCloseable {
     private static String TOKEN_DELIMITER = " ";
     private static String LINE_DELIMITER = "\n";
+    private static String OK_RESULT = "ok";
+    private static String ERROR_RESULT = "error";
 
     private final SerialCommunicator communicator = new SerialCommunicator();
     private volatile boolean open = false;
@@ -26,7 +28,12 @@ public class BLEDriver implements AutoCloseable {
     }
 
     public List<BLEDevice> scan(int interval, int window, int time, String serviceAddress) {
-        String result = communicator.sendCommandAndAwait(String.format("scan %s %s %s %s", interval, window, time, serviceAddress));
+        // increase time out for scanning process
+        long timeout = communicator.getTimeout();
+        communicator.setTimeout(timeout + time);
+        String result = checkError(communicator.sendCommandAndAwait(String.format("scan %s %s %s %s", interval, window, time, serviceAddress)));
+        communicator.setTimeout(timeout);
+
         String[] lines = result.split(LINE_DELIMITER);
 
         return Arrays.stream(lines).map(line -> {
@@ -36,11 +43,11 @@ public class BLEDriver implements AutoCloseable {
     }
 
     public void connect(String deviceId) {
-
+        checkError(communicator.sendCommandAndAwait(String.format("connect %s", deviceId)));
     }
 
     public void disconnect(String deviceId) {
-
+        checkError(communicator.sendCommandAndAwait(String.format("disconnect %s", deviceId)));
     }
 
     public List<BLEDevice> list() {
@@ -57,5 +64,12 @@ public class BLEDriver implements AutoCloseable {
 
     public void registerForNotify() {
 
+    }
+
+    private String checkError(String content) {
+        if(content.startsWith(ERROR_RESULT)) {
+            throw new BLEException(content.substring(ERROR_RESULT.length() + 1));
+        }
+        return content;
     }
 }

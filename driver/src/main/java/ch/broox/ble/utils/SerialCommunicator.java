@@ -25,6 +25,8 @@ public class SerialCommunicator implements AutoCloseable {
     // multi threading
     private volatile String recentContent = "";
     private final Semaphore mutex = new Semaphore(0);
+    private long requestTimestamp = Long.MAX_VALUE;
+    private long timeout = 1000 * 10;
 
     public SerialCommunicator() {
         this("]");
@@ -87,11 +89,12 @@ public class SerialCommunicator implements AutoCloseable {
         }
     }
 
-    public String sendCommandAndAwait(String command) {
+    public synchronized String sendCommandAndAwait(String command) {
         sendCommand(command);
 
         // await
         try {
+            requestTimestamp = System.currentTimeMillis();
             mutex.acquire();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -115,7 +118,7 @@ public class SerialCommunicator implements AutoCloseable {
             if(scan.hasNext()) {
                 String logicalLine = scan.next();
                 String content = logicalLine.substring(logicalLine.lastIndexOf("[") + 1).trim();
-                
+
                 if(content.startsWith(notifyKeyword)) {
                     String notification = content.substring(notifyKeyword.length() + 1);
                     notifyMessageListener(notification);
@@ -131,8 +134,22 @@ public class SerialCommunicator implements AutoCloseable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            // check for timeout
+            if(mutex.hasQueuedThreads() && System.currentTimeMillis() - requestTimestamp > timeout) {
+                recentContent = "error operation timed out";
+                mutex.release();
+            }
         }
 
         scan.close();
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
     }
 }

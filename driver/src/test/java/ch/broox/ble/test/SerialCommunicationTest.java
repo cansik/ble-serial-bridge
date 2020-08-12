@@ -9,10 +9,10 @@ public class SerialCommunicationTest {
     public void testLowLevelReading() throws InterruptedException {
         SerialCommunicator communicator = new SerialCommunicator();
 
-        communicator.open(TestSettings.ADDRESS, TestSettings.BAUD_RATE);
+        communicator.open(TestUtils.ADDRESS, TestUtils.BAUD_RATE);
 
         System.out.println("send connect:");
-        String result = communicator.sendCommandAndAwait("connect " + TestSettings.DEVICE_ID);
+        String result = communicator.sendCommandAndAwait("connect " + TestUtils.DEVICE_ID);
         System.out.println("Result: '" + result + "'");
 
         communicator.close();
