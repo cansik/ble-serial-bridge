@@ -18,8 +18,6 @@ private:
     HardwareSerial &serial;
     SimpleMap<String, std::function<int(String)>>* commands;
 
-    void setupCommands();
-
 public:
     explicit Communicator(HardwareSerial &serial);
 
