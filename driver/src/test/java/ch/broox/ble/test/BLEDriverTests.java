@@ -72,4 +72,21 @@ public class BLEDriverTests {
             driver.disconnect(TestUtils.DEVICE_ID);
         }
     }
+
+    @Test
+    public void registerForNotify() {
+        try (BLEDriver driver = new BLEDriver()) {
+            driver.open(TestUtils.ADDRESS, TestUtils.BAUD_RATE);
+
+            driver.addNotifyListener(message -> {
+                System.out.println("Notified: " + message);
+            });
+
+            driver.connect(TestUtils.DEVICE_ID);
+            driver.registerForNotify(TestUtils.DEVICE_ID, TestUtils.SERVICE_ID, TestUtils.IMU_ID);
+
+            TestUtils.sleep(5000);
+            driver.disconnect(TestUtils.DEVICE_ID);
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package ch.broox.ble;
 
 import ch.broox.ble.utils.SerialCommunicator;
+import ch.broox.ble.utils.SerialMessageListener;
 
 import java.util.Arrays;
 import java.util.List;
@@ -72,6 +73,14 @@ public class BLEDriver implements AutoCloseable {
 
     public void registerForNotify(String deviceId, String serviceId, String characteristicsId) {
         checkError(communicator.sendCommandAndAwait(String.format("register %s %s %s", deviceId, serviceId, characteristicsId)));
+    }
+
+    public void addNotifyListener(SerialMessageListener listener) {
+        communicator.addMessageListener(listener);
+    }
+
+    public void removeNotifyListener(SerialMessageListener listener) {
+        communicator.addMessageListener(listener);
     }
 
     private String checkError(String content) {
