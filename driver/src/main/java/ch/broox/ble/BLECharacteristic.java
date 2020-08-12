@@ -54,7 +54,8 @@ public class BLECharacteristic {
     }
 
     public void registerForNotification(SerialMessageListener listener) {
-        // todo: to be implemented
+        service.getDevice().getDriver().addNotifyListener(listener);
+        service.getDevice().getDriver().registerForNotify(service.getDevice().getId(), service.getId(), id);
     }
 
     public BLEService getService() {

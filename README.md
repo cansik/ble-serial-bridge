@@ -4,7 +4,7 @@ A firmware to use an ESP32 as a BLE device controlled over serial commands.
 
 ### Driver
 
-Currently there is a Java driver to use the Serial interface and a [Python example](test/serial_test.py) script.
+Currently there is a Java driver and a [Python example](test/serial_test.py) script which encapsules the native serial interface.
 
 ```groovy
 repositories {
