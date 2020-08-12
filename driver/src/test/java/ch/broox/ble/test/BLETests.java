@@ -30,4 +30,27 @@ public class BLETests {
             driver.disconnect(TestUtils.DEVICE_ID);
         }
     }
+
+    @Test
+    public void readCharacteristics() {
+        try (BLEDriver driver = new BLEDriver()) {
+            driver.open(TestUtils.ADDRESS, TestUtils.BAUD_RATE);
+
+            driver.connect(TestUtils.DEVICE_ID);
+            String value = driver.read(TestUtils.DEVICE_ID, TestUtils.SERVICE_ID, TestUtils.NEOPIXEL_COLOR_ID, "i32");
+            System.out.println("Value read: " + value);
+            driver.disconnect(TestUtils.DEVICE_ID);
+        }
+    }
+
+    @Test
+    public void writeCharacteristics() {
+        try (BLEDriver driver = new BLEDriver()) {
+            driver.open(TestUtils.ADDRESS, TestUtils.BAUD_RATE);
+
+            driver.connect(TestUtils.DEVICE_ID);
+            driver.write(TestUtils.DEVICE_ID, TestUtils.SERVICE_ID, TestUtils.NEOPIXEL_COLOR_ID, "i32", 0x0000FF);
+            driver.disconnect(TestUtils.DEVICE_ID);
+        }
+    }
 }

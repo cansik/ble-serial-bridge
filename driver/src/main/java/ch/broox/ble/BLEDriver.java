@@ -12,6 +12,11 @@ public class BLEDriver implements AutoCloseable {
     private static String OK_RESULT = "ok";
     private static String ERROR_RESULT = "error";
 
+    private static String FORMAT_STRING = "str";
+    private static String FORMAT_UINT8 = "i8";
+    private static String FORMATUINT16 = "i16";
+    private static String FORMATUINT32 = "i32";
+
     private final SerialCommunicator communicator = new SerialCommunicator();
     private volatile boolean open = false;
 
@@ -27,11 +32,11 @@ public class BLEDriver implements AutoCloseable {
         open = false;
     }
 
-    public List<BLEDevice> scan(int interval, int window, int time, String serviceAddress) {
+    public List<BLEDevice> scan(int interval, int window, int time, String serviceId) {
         // increase time out for scanning process
         long timeout = communicator.getTimeout();
         communicator.setTimeout(timeout + time);
-        String result = checkError(communicator.sendCommandAndAwait(String.format("scan %s %s %s %s", interval, window, time, serviceAddress)));
+        String result = checkError(communicator.sendCommandAndAwait(String.format("scan %s %s %s %s", interval, window, time, serviceId)));
         communicator.setTimeout(timeout);
 
         String[] lines = result.split(LINE_DELIMITER);
@@ -51,19 +56,22 @@ public class BLEDriver implements AutoCloseable {
     }
 
     public List<BLEDevice> list() {
-        return null;
+        String result = checkError(communicator.sendCommandAndAwait("list"));
+        String[] lines = result.split(LINE_DELIMITER);
+
+        return Arrays.stream(lines).map(line -> new BLEDevice(this, line.strip())).collect(Collectors.toList());
     }
 
-    public String read() {
-        return null;
+    public String read(String deviceId, String serviceId, String characteristicsId, String format) {
+        return checkError(communicator.sendCommandAndAwait(String.format("read %s %s %s %s", deviceId, serviceId, characteristicsId, format)));
     }
 
-    public void write(Object value) {
-
+    public void write(String deviceId, String serviceId, String characteristicsId, String format, Object value) {
+        checkError(communicator.sendCommandAndAwait(String.format("write %s %s %s %s %s", deviceId, serviceId, characteristicsId, value, format)));
     }
 
-    public void registerForNotify() {
-
+    public void registerForNotify(String deviceId, String serviceId, String characteristicsId) {
+        checkError(communicator.sendCommandAndAwait(String.format("register %s %s %s", deviceId, serviceId, characteristicsId)));
     }
 
     private String checkError(String content) {
