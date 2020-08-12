@@ -1,21 +1,23 @@
 package ch.broox.ble;
 
 public class BLEDevice {
-    private BLESerialBridgeDriver driver;
+    private BLEDriver driver;
     private String id;
+    private String name;
     private boolean connected;
 
-    public BLEDevice(BLESerialBridgeDriver driver, String id) {
+    public BLEDevice(BLEDriver driver, String id, String name) {
         this.driver = driver;
         this.id = id;
+        this.name = name;
     }
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public String getName() {
+        return name;
     }
 
     public boolean isConnected() {

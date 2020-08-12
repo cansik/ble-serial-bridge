@@ -15,9 +15,12 @@ import java.util.regex.Pattern;
 public class SerialCommunicator implements AutoCloseable {
     private volatile boolean open = false;
     private SerialPort port;
+    private OutputStreamWriter out;
     private Thread communicationThread;
-    private List<SerialMessageListener> messageListeners = new ArrayList<>();
-    private String streamDelimiter;
+
+    private final List<SerialMessageListener> messageListeners = new ArrayList<>();
+    private final String streamDelimiter;
+    private final String notifyKeyword = "notify";
 
     // multi threading
     private volatile String recentContent = "";
@@ -39,6 +42,9 @@ public class SerialCommunicator implements AutoCloseable {
 
         if(port.openPort(100)) {
             port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
+
+            OutputStream output = port.getOutputStream();
+            out = new OutputStreamWriter(output);
 
             communicationThread = new Thread(this::receiverLoop);
             communicationThread.setDaemon(true);
@@ -72,16 +78,17 @@ public class SerialCommunicator implements AutoCloseable {
         messageListeners.remove(listener);
     }
 
-    public String sendCommandAndAwait(String command) {
-        OutputStream output = port.getOutputStream();
-        OutputStreamWriter out = new OutputStreamWriter(output);
-
+    public void sendCommand(String command) {
         try {
             out.write(command + "\n");
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String sendCommandAndAwait(String command) {
+        sendCommand(command);
 
         // await
         try {
@@ -108,8 +115,12 @@ public class SerialCommunicator implements AutoCloseable {
             if(scan.hasNext()) {
                 String logicalLine = scan.next();
                 String content = logicalLine.substring(logicalLine.lastIndexOf("[") + 1).trim();
-
-                System.out.println("Received: '" + content + "'");
+                
+                if(content.startsWith(notifyKeyword)) {
+                    String notification = content.substring(notifyKeyword.length() + 1);
+                    notifyMessageListener(notification);
+                    continue;
+                }
 
                 recentContent = content;
                 mutex.release();
