@@ -18,6 +18,8 @@ void Communicator::update() {
     if(!serial.available())
         return;
 
+    serial.println("[");
+
     // read line
     auto line = serial.readStringUntil(LINE_DELIMITER);
     line.trim();
@@ -41,6 +43,8 @@ void Communicator::update() {
     if(output == -1) {
         serial.println("error Parameters could not be parsed!");
     }
+
+    serial.println("]");
 }
 
 void Communicator::registerCommand(const String& command, const std::function<int(String)>& block) {

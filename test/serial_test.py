@@ -32,15 +32,6 @@ def send_and_read(command, wait_time=100, skip_receiving=False):
 
 send_and_read("connect %s" % device_id)
 
-send_and_read("write %s %s %s %s %s" % (device_id, service_id, neopixel_color_id, 0x0000FF, "i32"))
-send_and_read("read %s %s %s %s" % (device_id, service_id, neopixel_color_id, "i32"))
-
-time.sleep(2)
-
-send_and_read("disconnect %s" % device_id)
-port.close()
-exit(0)
-
 if test_notify:
     send_and_read("register %s %s %s" % (device_id, service_id, imu_id), wait_time=5000)
 
