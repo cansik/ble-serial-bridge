@@ -267,6 +267,50 @@ void setupCommands() {
     });
 
     communicator.registerCommand("register", [&](const String &params) {
+        char deviceAddress[18]; // 17 plus 1 for null
+        char serviceAddress[37]; // 36 plus 1 for null
+        char characteristicAddress[37]; // 36 plus 1 for null
+        char format[4] = "str"; // 3 plus 1 for null
+
+        if (sscanf(params.c_str(), "%s %s %s %s", deviceAddress, serviceAddress, characteristicAddress, format) < -1)
+            return -1;
+
+        auto client = devices->get(deviceAddress);
+        auto serviceUUID = BLEUUID(serviceAddress);
+        auto charUUID = BLEUUID(characteristicAddress);
+        if (client == nullptr) {
+            communicator.getSerial().println("error client not found");
+            return 1;
+        }
+
+        auto service = client->getService(serviceUUID);
+        if (service == nullptr) {
+            communicator.getSerial().println("error service not found");
+            return 1;
+        }
+
+        auto characteristic = service->getCharacteristic(charUUID);
+        if (characteristic == nullptr) {
+            communicator.getSerial().println("error characteristic not found");
+            return 1;
+        }
+
+        if (!characteristic->canNotify()) {
+            communicator.getSerial().println("error characteristic not notifyable");
+            return 1;
+        }
+
+        characteristic->registerForNotify([](BLERemoteCharacteristic* ch,
+                                             uint8_t* data,
+                                             size_t length,
+                                             bool isNotify) {
+            communicator.getSerial().print("notify: ");
+            unsigned int value = *reinterpret_cast<unsigned int*>(data);
+            communicator.getSerial().println(value);
+        });
+
+        communicator.getSerial().println("notify registered");
+
         return 0;
     });
 }
