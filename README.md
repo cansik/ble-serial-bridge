@@ -4,7 +4,17 @@ A firmware to use an ESP32 as a BLE device controlled over serial commands.
 
 ### Driver
 
-Currently there is a Java driver to use the Serial interface and a Python example script.
+Currently there is a Java driver to use the Serial interface and a [Python example](test/serial_test.py) script.
+
+```groovy
+repositories {
+	maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+        implementation 'com.github.cansik:ble-serial-bridge:-78138d765e-1'
+}
+```
 
 ### API
 
@@ -12,7 +22,7 @@ Currently there is a Java driver to use the Serial interface and a Python exampl
 
 Scan surrounding devices for a specific `service id`.
 
-```bash
+```
 scan interval window scan_time service_id
 ```
 
@@ -20,7 +30,7 @@ scan interval window scan_time service_id
 
 Connect and disconnect to a device.
 
-```bash
+```
 connect device_id
 disconnect device_id
 ```
@@ -29,7 +39,7 @@ disconnect device_id
 
 List all active BLE connections.
 
-```bash
+```
 list
 ```
 
@@ -37,7 +47,7 @@ list
 
 Connect and disconnect to a device.
 
-```bash
+```
 read device_id service_id characteristic_id [format]
 write device_id service_id characteristic_id value [format]
 ```
@@ -46,6 +56,6 @@ write device_id service_id characteristic_id value [format]
 
 It is possible to register for a notification of a specific charactersitic.
 
-```bash
+```
 register device_id service_id characteristic_id
 ```
