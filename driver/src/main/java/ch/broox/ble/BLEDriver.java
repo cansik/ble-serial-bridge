@@ -13,10 +13,10 @@ public class BLEDriver implements AutoCloseable {
     private static String OK_RESULT = "ok";
     private static String ERROR_RESULT = "error";
 
-    private static String FORMAT_STRING = "str";
-    private static String FORMAT_UINT8 = "i8";
-    private static String FORMATUINT16 = "i16";
-    private static String FORMATUINT32 = "i32";
+    protected static String FORMAT_STRING = "str";
+    protected static String FORMAT_UINT8 = "i8";
+    protected static String FORMAT_UINT16 = "i16";
+    protected static String FORMAT_UINT32 = "i32";
 
     private final SerialCommunicator communicator = new SerialCommunicator();
     private volatile boolean open = false;

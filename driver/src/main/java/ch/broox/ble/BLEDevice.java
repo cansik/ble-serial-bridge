@@ -18,6 +18,18 @@ public class BLEDevice {
         this.name = name;
     }
 
+    public void connect() {
+        driver.connect(this.id);
+    }
+
+    public void disconnect() {
+        driver.disconnect(this.id);
+    }
+
+    public BLEService getService(String serviceId) {
+        return new BLEService(this, serviceId);
+    }
+
     public String getId() {
         return id;
     }
@@ -32,6 +44,10 @@ public class BLEDevice {
 
     public void setConnected(boolean connected) {
         this.connected = connected;
+    }
+
+    public BLEDriver getDriver() {
+        return driver;
     }
 
     @Override
