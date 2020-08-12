@@ -130,7 +130,7 @@ void setupCommands() {
         char deviceAddress[18]; // 17 plus 1 for null
         char serviceAddress[37]; // 36 plus 1 for null
         char characteristicAddress[37]; // 36 plus 1 for null
-        char format[4] = "val"; // 3 plus 1 for null
+        char format[4] = "str"; // 3 plus 1 for null
 
         if (sscanf(params.c_str(), "%s %s %s %s", deviceAddress, serviceAddress, characteristicAddress, format) < -1)
             return -1;
@@ -139,49 +139,49 @@ void setupCommands() {
         auto serviceUUID = BLEUUID(serviceAddress);
         auto charUUID = BLEUUID(characteristicAddress);
         if (client == nullptr) {
-            communicator.getSerial().println("client not found");
+            communicator.getSerial().println("error client not found");
             return 1;
         }
 
         auto service = client->getService(serviceUUID);
         if (service == nullptr) {
-            communicator.getSerial().println("service not found");
+            communicator.getSerial().println("error service not found");
             return 1;
         }
 
         auto characteristic = service->getCharacteristic(charUUID);
         if (characteristic == nullptr) {
-            communicator.getSerial().println("characteristic not found");
+            communicator.getSerial().println("error characteristic not found");
             return 1;
         }
 
         if (!characteristic->canRead()) {
-            communicator.getSerial().println("characteristic not readable");
+            communicator.getSerial().println("error characteristic not readable");
             return 1;
         }
 
         // read value
-        if(startsWith("val", format)) {
+        if(startsWith("str", format)) {
             std::string value = characteristic->readValue();
             communicator.getSerial().println(value.c_str());
             return 0;
         }
 
-        if(startsWith("ui8", format)) {
+        if(startsWith("i8", format)) {
             auto value = characteristic->readUInt8();
-            communicator.getSerial().println(value, HEX);
+            communicator.getSerial().println(value);
             return 0;
         }
 
         if(startsWith("i16", format)) {
             auto value = characteristic->readUInt16();
-            communicator.getSerial().println(value, HEX);
+            communicator.getSerial().println(value);
             return 0;
         }
 
         if(startsWith("i32", format)) {
             auto value = characteristic->readUInt32();
-            communicator.getSerial().println(value, HEX);
+            communicator.getSerial().println(value);
             return 0;
         }
 
@@ -189,7 +189,81 @@ void setupCommands() {
     });
 
     communicator.registerCommand("write", [&](const String &params) {
-        return 0;
+        char deviceAddress[18]; // 17 plus 1 for null
+        char serviceAddress[37]; // 36 plus 1 for null
+        char characteristicAddress[37]; // 36 plus 1 for null
+        char value[65]; // 64 plus 1 for null (should be 512 + 1)
+        char format[4] = "str"; // 3 plus 1 for null
+
+        if (sscanf(params.c_str(), "%s %s %s %s %s",
+                   deviceAddress, serviceAddress, characteristicAddress, value, format) < 1)
+            return -1;
+
+        auto client = devices->get(deviceAddress);
+        auto serviceUUID = BLEUUID(serviceAddress);
+        auto charUUID = BLEUUID(characteristicAddress);
+        if (client == nullptr) {
+            communicator.getSerial().println("error client not found");
+            return 1;
+        }
+
+        auto service = client->getService(serviceUUID);
+        if (service == nullptr) {
+            communicator.getSerial().println("error service not found");
+            return 1;
+        }
+
+        auto characteristic = service->getCharacteristic(charUUID);
+        if (characteristic == nullptr) {
+            communicator.getSerial().println("error characteristic not found");
+            return 1;
+        }
+
+        if (!characteristic->canWrite()) {
+            communicator.getSerial().println("error characteristic not writable");
+            return 1;
+        }
+
+        // write
+        if(startsWith("str", format)) {
+            characteristic->writeValue(value, false);
+            communicator.getSerial().println("str value written");
+            return 0;
+        }
+
+        if(startsWith("i8", format)) {
+            uint8_t number = String(value).toInt();
+            characteristic->writeValue(&number, 1, false);
+
+            communicator.getSerial().print("i8 value written: ");
+            communicator.getSerial().println(number);
+            return 0;
+        }
+
+        if(startsWith("i16", format)) {
+            uint16_t number = String(value).toInt();
+            byte *b = (byte *)&number;
+
+            characteristic->writeValue(b, 2, false);
+
+            communicator.getSerial().print("i16 value written: ");
+            communicator.getSerial().println(number);
+            return 0;
+        }
+
+        if(startsWith("i32", format)) {
+            uint32_t number = String(value).toInt();
+            byte *b = (byte *)&number;
+
+            characteristic->writeValue(b, 4, false);
+
+            communicator.getSerial().print("i32 value written: ");
+            communicator.getSerial().println(number);
+            return 0;
+        }
+
+        communicator.getSerial().println("error could not write value");
+        return 1;
     });
 
     communicator.registerCommand("register", [&](const String &params) {
