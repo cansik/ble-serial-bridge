@@ -18,6 +18,8 @@ private:
     HardwareSerial &serial;
     SimpleMap<String, std::function<int(String)>>* commands;
 
+    String errorMessage = "";
+
 public:
     explicit Communicator(HardwareSerial &serial);
 
@@ -26,6 +28,10 @@ public:
     void registerCommand(const String& command, const std::function<int(String)>& block);
 
     Stream &getSerial() const;
+
+    const String &getErrorMessage() const;
+
+    void setErrorMessage(const String &errorMessage);
 };
 
 

@@ -2,8 +2,6 @@
 #include "Arduino.h"
 
 #include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 
 #define DEBUG_MODE
@@ -69,7 +67,7 @@ void setupCommands() {
             communicator.getSerial().println(device.getName().c_str());
         }
 
-        return 0;
+        return 1;
     });
 
     communicator.registerCommand("connect", [&](const String &params) {
@@ -83,12 +81,11 @@ void setupCommands() {
         auto client = BLEDevice::createClient();
         if (client->connect(bleDeviceAddress)) {
             devices->put(deviceAddress, client);
-            communicator.getSerial().print("connected");
             return 0;
         }
 
-        communicator.getSerial().print("could not connect");
-        return 1;
+        communicator.setErrorMessage("could not connect");
+        return -2;
     });
 
     communicator.registerCommand("disconnect", [&](const String &params) {
@@ -99,16 +96,13 @@ void setupCommands() {
 
         auto client = devices->get(deviceAddress);
         if (client == nullptr) {
-            communicator.getSerial().print("client not found");
-            return 1;
+            communicator.setErrorMessage("client not found");
+            return -2;
         }
 
         client->disconnect();
         devices->remove(deviceAddress);
         free(client);
-
-        communicator.getSerial().print("disconnected");
-
         return 0;
     });
 
@@ -125,7 +119,7 @@ void setupCommands() {
 
             communicator.getSerial().println(devices->getKey(i));
         }
-        return 0;
+        return 1;
     });
 
     communicator.registerCommand("read", [&](const String &params) {
@@ -141,53 +135,54 @@ void setupCommands() {
         auto serviceUUID = BLEUUID(serviceAddress);
         auto charUUID = BLEUUID(characteristicAddress);
         if (client == nullptr) {
-            communicator.getSerial().print("error client not found");
-            return 1;
+            communicator.setErrorMessage("client not found");
+            return -2;
         }
 
         auto service = client->getService(serviceUUID);
         if (service == nullptr) {
-            communicator.getSerial().print("error service not found");
-            return 1;
+            communicator.setErrorMessage("service not found");
+            return -2;
         }
 
         auto characteristic = service->getCharacteristic(charUUID);
         if (characteristic == nullptr) {
-            communicator.getSerial().print("error characteristic not found");
-            return 1;
+            communicator.setErrorMessage("characteristic not found");
+            return -2;
         }
 
         if (!characteristic->canRead()) {
-            communicator.getSerial().print("error characteristic not readable");
-            return 1;
+            communicator.setErrorMessage("characteristic not readable");
+            return -2;
         }
 
         // read value
         if(startsWith("str", format)) {
             std::string value = characteristic->readValue();
-            communicator.getSerial().println(value.c_str());
-            return 0;
+            communicator.getSerial().print(value.c_str());
+            return 1;
         }
 
         if(startsWith("i8", format)) {
             auto value = characteristic->readUInt8();
-            communicator.getSerial().println(value);
-            return 0;
+            communicator.getSerial().print(value);
+            return 1;
         }
 
         if(startsWith("i16", format)) {
             auto value = characteristic->readUInt16();
-            communicator.getSerial().println(value);
-            return 0;
+            communicator.getSerial().print(value);
+            return 1;
         }
 
         if(startsWith("i32", format)) {
             auto value = characteristic->readUInt32();
-            communicator.getSerial().println(value);
-            return 0;
+            communicator.getSerial().print(value);
+            return 1;
         }
 
-        return 0;
+        communicator.setErrorMessage("value not set");
+        return -2;
     });
 
     communicator.registerCommand("write", [&](const String &params) {
@@ -205,39 +200,36 @@ void setupCommands() {
         auto serviceUUID = BLEUUID(serviceAddress);
         auto charUUID = BLEUUID(characteristicAddress);
         if (client == nullptr) {
-            communicator.getSerial().print("error client not found");
-            return 1;
+            communicator.setErrorMessage("client not found");
+            return -2;
         }
 
         auto service = client->getService(serviceUUID);
         if (service == nullptr) {
-            communicator.getSerial().print("error service not found");
-            return 1;
+            communicator.setErrorMessage("service not found");
+            return -2;
         }
 
         auto characteristic = service->getCharacteristic(charUUID);
         if (characteristic == nullptr) {
-            communicator.getSerial().print("error characteristic not found");
-            return 1;
+            communicator.setErrorMessage("characteristic not found");
+            return -2;
         }
 
         if (!characteristic->canWrite()) {
-            communicator.getSerial().print("error characteristic not writable");
-            return 1;
+            communicator.setErrorMessage("characteristic not writable");
+            return -2;
         }
 
         // write
         if(startsWith("str", format)) {
             characteristic->writeValue(value, false);
-            communicator.getSerial().print("value written");
             return 0;
         }
 
         if(startsWith("i8", format)) {
             uint8_t number = String(value).toInt();
             characteristic->writeValue(&number, 1, false);
-
-            communicator.getSerial().print("value written");
             return 0;
         }
 
@@ -246,7 +238,6 @@ void setupCommands() {
             byte *b = (byte *)&number;
 
             characteristic->writeValue(b, 2, false);
-            communicator.getSerial().print("value written");
             return 0;
         }
 
@@ -255,12 +246,11 @@ void setupCommands() {
             byte *b = (byte *)&number;
 
             characteristic->writeValue(b, 4, false);
-            communicator.getSerial().print("value written");
             return 0;
         }
 
-        communicator.getSerial().print("error could not write value");
-        return 1;
+        communicator.setErrorMessage("could not write value");
+        return -2;
     });
 
     communicator.registerCommand("register", [&](const String &params) {
@@ -276,37 +266,38 @@ void setupCommands() {
         auto serviceUUID = BLEUUID(serviceAddress);
         auto charUUID = BLEUUID(characteristicAddress);
         if (client == nullptr) {
-            communicator.getSerial().print("error client not found");
-            return 1;
+            communicator.setErrorMessage("error client not found");
+            return -2;
         }
 
         auto service = client->getService(serviceUUID);
         if (service == nullptr) {
-            communicator.getSerial().print("error service not found");
-            return 1;
+            communicator.setErrorMessage("error service not found");
+            return -2;
         }
 
         auto characteristic = service->getCharacteristic(charUUID);
         if (characteristic == nullptr) {
-            communicator.getSerial().print("error characteristic not found");
-            return 1;
+            communicator.setErrorMessage("error characteristic not found");
+            return -2;
         }
 
         if (!characteristic->canNotify()) {
-            communicator.getSerial().print("error characteristic not notifiable");
-            return 1;
+            communicator.setErrorMessage("error characteristic not notifiable");
+            return -2;
         }
 
         characteristic->registerForNotify([](BLERemoteCharacteristic* ch,
                                              uint8_t* data,
                                              size_t length,
                                              bool isNotify) {
-            communicator.getSerial().print("notify: ");
-            unsigned int value = *reinterpret_cast<unsigned int*>(data);
-            communicator.getSerial().println(value);
-        });
 
-        communicator.getSerial().print("notify registered");
+            // todo: implement reading multiple value types
+            communicator.getSerial().print("[notify ");
+            unsigned int value = *reinterpret_cast<unsigned int*>(data);
+            communicator.getSerial().print(value);
+            communicator.getSerial().println("]");
+        });
 
         return 0;
     });
