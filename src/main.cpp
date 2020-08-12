@@ -241,32 +241,24 @@ void setupCommands() {
         }
 
         if(startsWith("i16", format)) {
-            uint16_t n = String(value).toInt();
+            uint16_t number = String(value).toInt();
+            byte *b = (byte *)&number;
 
-            uint8_t data[2];
-            data[1] = (n >> 0)  & 0xFF;
-            data[0] = (n >> 8)  & 0xFF;
-
-            characteristic->writeValue(&data[0], 2, false);
+            characteristic->writeValue(b, 2, false);
 
             communicator.getSerial().print("i16 value written: ");
-            communicator.getSerial().println(n);
+            communicator.getSerial().println(number);
             return 0;
         }
 
         if(startsWith("i32", format)) {
-            uint32_t n = String(value).toInt();
+            uint32_t number = String(value).toInt();
+            byte *b = (byte *)&number;
 
-            uint8_t data[4];
-            data[3] = (n >> 0)  & 0xFF;
-            data[2] = (n >> 8)  & 0xFF;
-            data[1] = (n >> 16) & 0xFF;
-            data[0] = (n >> 24) & 0xFF;
-
-            characteristic->writeValue(&data[0], 4, false);
+            characteristic->writeValue(b, 4, false);
 
             communicator.getSerial().print("i32 value written: ");
-            communicator.getSerial().println(n);
+            communicator.getSerial().println(number);
             return 0;
         }
 
