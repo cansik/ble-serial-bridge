@@ -53,6 +53,7 @@ public class SerialCommunicator implements AutoCloseable {
             communicationThread.start();
 
             open = true;
+            return true;
         }
 
         return false;
