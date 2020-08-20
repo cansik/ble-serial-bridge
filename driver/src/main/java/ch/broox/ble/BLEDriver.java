@@ -24,8 +24,8 @@ public class BLEDriver implements AutoCloseable {
 
     public boolean open(String port, int baudRate) {
         if (open) return false;
-        open = true;
-        return communicator.open(port, baudRate);
+        open = communicator.open(port, baudRate);
+        return open;
     }
 
     public void close() {
