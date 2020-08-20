@@ -95,4 +95,8 @@ public class BLEDriver implements AutoCloseable {
         }
         return content;
     }
+
+    public boolean isOpen() {
+        return open;
+    }
 }
