@@ -3,6 +3,7 @@ package ch.broox.ble;
 import ch.broox.ble.utils.SerialCommunicator;
 import ch.broox.ble.utils.SerialMessageListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,6 +42,11 @@ public class BLEDriver implements AutoCloseable {
         communicator.setTimeout(timeout);
 
         String[] lines = result.split(LINE_DELIMITER);
+
+        // check if empty
+        if(lines.length == 1 && lines[0].trim().equals("")) {
+            return new ArrayList<>();
+        }
 
         return Arrays.stream(lines).map(line -> {
                     String[] tokens = line.split(TOKEN_DELIMITER);
