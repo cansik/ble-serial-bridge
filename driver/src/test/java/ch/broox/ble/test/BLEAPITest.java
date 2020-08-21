@@ -17,12 +17,18 @@ public class BLEAPITest {
             device.connect();
 
             BLEService service = device.getService(TestUtils.SERVICE_ID);
-            BLECharacteristic characteristic = service.getCharacteristic(TestUtils.NEOPIXEL_COLOR_ID);
+            BLECharacteristic characteristic = service.getCharacteristic(TestUtils.IR_LED_ID);
 
-            characteristic.writeUInt32(0x550010);
-
-            TestUtils.sleep(500);
-
+            // turn on ir led
+            System.out.println("turn on");
+            characteristic.writeUInt32(1);
+            TestUtils.sleep(2000);
+            System.out.println("State: " + characteristic.readUInt32());
+            TestUtils.sleep(2000);
+            System.out.println("turn off");
+            characteristic.writeUInt32(0);
+            TestUtils.sleep(2000);
+            System.out.println("State: " + characteristic.readUInt32());
             device.disconnect();
         }
     }
