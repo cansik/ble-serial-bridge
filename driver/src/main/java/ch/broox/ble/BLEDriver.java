@@ -66,6 +66,11 @@ public class BLEDriver implements AutoCloseable {
         String result = checkError(communicator.sendCommandAndAwait("list"));
         String[] lines = result.split(LINE_DELIMITER);
 
+        // check if empty
+        if(lines.length == 1 && lines[0].trim().equals("")) {
+            return new ArrayList<>();
+        }
+
         return Arrays.stream(lines).map(line -> new BLEDevice(this, line.trim())).collect(Collectors.toList());
     }
 
