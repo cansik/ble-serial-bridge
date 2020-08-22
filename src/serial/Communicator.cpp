@@ -32,7 +32,8 @@ void Communicator::update() {
 
 
     if(block == nullptr) {
-        serial.println("error Command is not registered!");
+        serial.print("error Command is not registered!");
+        serial.println("]");
         return;
     }
 

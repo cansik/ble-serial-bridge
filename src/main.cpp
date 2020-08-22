@@ -54,6 +54,7 @@ void setupCommands() {
         scan->setInterval(interval);
         scan->setWindow(window);
         scan->setActiveScan(true);
+        scan->clearResults();
         auto foundDevices = scan->start(time, false);
 
         auto isFirstDevice = true;

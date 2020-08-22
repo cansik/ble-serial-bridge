@@ -12,7 +12,7 @@ public class BLEDriverTests {
     public void scanTest() {
         try (BLEDriver driver = new BLEDriver()) {
             driver.open(TestUtils.ADDRESS, TestUtils.BAUD_RATE);
-            List<BLEDevice> devices = driver.scan(100, 99, 2, TestUtils.NO_SERVICE_ID);
+            List<BLEDevice> devices = driver.scan(100, 99, 2, TestUtils.SERVICE_ID);
 
             System.out.println("Devices (" + devices.size() + "):");
             for(BLEDevice device : devices) {
